@@ -58,7 +58,6 @@ void pause(int seconds) {
 
 int main()
 {
-
 	Climate roomB114;
 
 	int sensorReadTime = 0;
@@ -80,8 +79,8 @@ int main()
 			
 			// TODO: Uncomment lines as you implement in climate.hpp
 
-			cout << " temperature " << roomB114.getTemperature(sensorReadTime) << " C";
-			cout << " humidity " << roomB114.getHumidity(sensorReadTime) << "%" << endl;
+			//cout << " temperature " << roomB114.getTemperature(sensorReadTime) << " C";
+			//cout << " humidity " << roomB114.getHumidity(sensorReadTime) << "%" << endl;
 
 			pause(1);
 		}
@@ -104,6 +103,7 @@ int main()
 		cout << "Maximum Temperature in the last " << number_of_seconds << " seconds " << roomB114.maximumTemperature(number_of_seconds) << endl;
 		//cout << roomB114("humidity", 1) << ", " << roomB114("temperature", 1) << endl;
 	}
+
 	catch (const runtime_error &e) {
 		cerr << "Error occured: " << e.what() << endl;
 	}
