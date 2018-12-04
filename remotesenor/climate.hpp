@@ -6,7 +6,6 @@
 #define maximum_readings 24 * 60 * 60
 #define invalid_reading  -1000.0
 #include <vector>;
-#include <exception>;
 
 
 #define fakedata 1	 // NOTE:  Set to 1 use fake sensor values instead of the online values 0
@@ -47,7 +46,6 @@ protected:
 	float tempArray[maximum_readings];
 	float humidArray[maximum_readings];
 public:
-	
 
 	// Constructors
 	Climate();
@@ -102,38 +100,24 @@ long	Climate::readSensor() {
 	//get sensor read method launch time
 	system_clock::time_point EndTime = std::chrono::system_clock::now();
 	sensorDevice.read_data();
+
 	//calculate time passed since launch of app
-	std::chrono::duration<double> Duration = EndTime - StartTime;;
-	int currentSecond = (int)Duration.count();
+	std::chrono::duration<double> currentSecond = EndTime - StartTime;
 
 	//store sensor readings in arrays
-	tempArray[currentSecond] = sensorDevice.get_temperature_in_c();
-	humidArray[currentSecond] = sensorDevice.get_humidity();
-	if (currentSecond < 1) {
-		throw underflow_error("Less than a 1 second from last sample");
-	}
-	if (currentSecond > maximum_readings) {
-		throw out_of_range("Over 24 hout limit!");
-	}
-	if (sensorDevice.get_temperature_in_c() == NULL || sensorDevice.get_humidity() == NULL) {
-		throw runtime_error("Read attemt failure!");
-	}
+	tempArray[(long)currentSecond.count()] = sensorDevice.get_temperature_in_c();
+	humidArray[(long)currentSecond.count()] = sensorDevice.get_humidity();
 	// This line is purely for your debugging and can be removes/commented out in the final code.
 		//cout << endl << "Debugging information : " << "Temperature is " << tempArray[(long)currentSecond.count()] << " in degrees C " << sensorDevice.get_humidity() << "% humidity" << endl;
-		//cout << " Element at index: " << currentSecond << " Temp: "<<tempArray[currentSecond]<< endl;	
-	return currentSecond;
+		//cout << " Element at index: " << (long)currentSecond.count() << " Temp: "<<tempArray[(long)currentSecond.count()]<< endl;	
+	return (long)currentSecond.count();
 
 	
 }
 
-	
 long Climate::sampleCount(long secs) {
 
-	if (secs > maximum_readings || secs < 1) {
-		throw out_of_range("Out of range");
-	}
-	
-	for (int n = (int)secs; n >= 1; n--) {
+	for (int n = (int)secs; n >= 1 ; n--) {
 		if (tempArray[n] != NULL) {
 			samples++;
 		}
@@ -141,11 +125,9 @@ long Climate::sampleCount(long secs) {
 			samples++;
 		}
 	}
-			
+	
 	return samples;
 }
-
-
 
 long Climate::sampleTotal() {
 	for (auto it = begin(tempArray); it != end(tempArray); ++it) {
@@ -155,28 +137,14 @@ long Climate::sampleTotal() {
 }
 
 double Climate::getHumidity(long sec) {
-	if (sec > maximum_readings || sec < 1) {
-		throw out_of_range("Out of range");
-	}
-	
 	float value = humidArray[sec];
-	if (value == NULL) {
-		throw invalid_argument("No samples at specified time!");
-	}
 	return value;
 }
 
 double Climate::averageHumidity(long lookBack) {
 	double avg;
-	double sum = 0;
-	if (lookBack > maximum_readings || lookBack < 1) {
-		throw out_of_range("Out of range");
-	}
-	for (int i = lookBack; i >= 1; i--) {
-		if (humidArray[i] == NULL) {
-			throw invalid_argument("No samples at specified time!");
-		}
-		sum += humidArray[i];
+	double sum;
+	for (int i = lookBack; i >= 1; i--) {		
 	}
 	avg = sum / lookBack;
 	return avg;
@@ -184,15 +152,9 @@ double Climate::averageHumidity(long lookBack) {
 }
 
 double Climate::maximumHumidity(long lookBack) {
-	if (lookBack > maximum_readings || lookBack < 1) {
-		throw out_of_range("Out of range");
-	}
 	double max = humidArray[lookBack];
 	for (int i = lookBack; i >= 1; i--)
 	{
-		if (humidArray[i] == NULL) {
-			throw invalid_argument("No samples at specified time!");
-		}
 		if (humidArray[i] > max) {
 			max = humidArray[i];
 		}
@@ -201,15 +163,9 @@ double Climate::maximumHumidity(long lookBack) {
 }
 
 double Climate::minimumHumidity(long lookBack) {
-	if (lookBack > maximum_readings || lookBack < 1) {
-		throw out_of_range("Out of range");
-	}
 	double min = humidArray[lookBack];
 	for (int i = lookBack; i >= 1; i--)
 	{
-		if (humidArray[i] == NULL) {
-			throw invalid_argument("No samples at specified time!");
-		}
 		if (humidArray[i] < min) {
 			min = humidArray[i];
 		}
@@ -218,26 +174,14 @@ double Climate::minimumHumidity(long lookBack) {
 }
 
 double Climate::getTemperature(long sec) {
-	if (sec > maximum_readings || sec < 1) {
-		throw out_of_range("Out of range");
-	}
 	float value = tempArray[sec];
-	if (value == NULL) {
-		throw invalid_argument("No samples at specified time!");
-	}
 	return value;
 }
 
 double Climate::averageTemperature(long lookBack) {
-	if (lookBack > maximum_readings || lookBack < 1) {
-		throw out_of_range("Out of range");
-	}
 	double avg;
-	double sum = 0;
+	double sum;
 	for (int i = lookBack; i >= 1; i--) {
-		if (tempArray[i] == NULL) {
-			throw invalid_argument("No samples at specified time!");
-		}
 		sum += tempArray[i];
 	}
 	avg = sum / lookBack;
@@ -246,15 +190,9 @@ double Climate::averageTemperature(long lookBack) {
 }
 
 double Climate::maximumTemperature(long lookBack) {
-	if (lookBack > maximum_readings || lookBack < 1) {
-		throw out_of_range("Out of range");
-	}
 	double max = tempArray[lookBack];
 	for (int i = lookBack; i >= 1; i--)
 	{
-		if (tempArray[i] == NULL) {
-			throw invalid_argument("No samples at specified time!");
-		}
 		if (tempArray[i] > max) {
 			max = tempArray[i];
 		}
@@ -263,15 +201,9 @@ double Climate::maximumTemperature(long lookBack) {
 }
 
 double Climate::minimumTemperature(long lookBack) {
-	if (lookBack > maximum_readings || lookBack < 1) {
-		throw out_of_range("Out of range");
-	}
 	double min = tempArray[lookBack];
 	for (int i = lookBack; i >= 1; i--)
 	{
-		if (tempArray[i] == NULL) {
-			throw invalid_argument("No samples at specified time!");
-		}
 		if (tempArray[i] < min) {
 			min = tempArray[i];
 		}
