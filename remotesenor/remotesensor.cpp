@@ -34,9 +34,9 @@
 
 #include "climate.hpp"    // TODO: This is the assignment file for you to edit
 
-#define number_of_reads 5 // TODO: Change this to specify how may times to read the sensor
+#define number_of_reads 50// TODO: Change this to specify how may times to read the sensor
 
-#define number_of_seconds 5   //60 * 60
+#define number_of_seconds 10
 
 #if windows == 1
 using namespace System;  // Microsoft Specific
@@ -79,13 +79,13 @@ int main()
 			
 			// TODO: Uncomment lines as you implement in climate.hpp
 
-			//cout << " temperature " << roomB114.getTemperature(sensorReadTime) << " C";
-			//cout << " humidity " << roomB114.getHumidity(sensorReadTime) << "%" << endl;
+			cout << " temperature " << roomB114.getTemperature(sensorReadTime) << " C";
+			cout << " humidity " << roomB114.getHumidity(sensorReadTime) << "%" << endl;
 
 			pause(1);
 		}
 		catch (exception &e) {
-			cout << " reaing failed." << endl;
+			cout << " reading failed." << endl;
 			cerr << "Caught: " << e.what() << "Type: " << typeid(e).name() << endl;
 		}
 	}
@@ -93,7 +93,6 @@ int main()
 
 	// TODO: Uncomment lines as you implement in climate.hpp
 
-	try {
 		cout << "Number of samples taken in the last " << number_of_seconds << " seconds " << roomB114.sampleCount(number_of_seconds) << endl;
 		cout << "Average Humidity in the last " << number_of_seconds << " seconds " << roomB114.averageHumidity(number_of_seconds) << endl;
 		cout << "Minimum Humidity in the last " << number_of_seconds << " seconds " << roomB114.minimumHumidity(number_of_seconds) << endl;
@@ -102,27 +101,6 @@ int main()
 		cout << "Minimum Temperature in the last " << number_of_seconds << " seconds " << roomB114.minimumTemperature(number_of_seconds) << endl;
 		cout << "Maximum Temperature in the last " << number_of_seconds << " seconds " << roomB114.maximumTemperature(number_of_seconds) << endl;
 		//cout << roomB114("humidity", 1) << ", " << roomB114("temperature", 1) << endl;
-	}
-
-	catch (const runtime_error &e) {
-		cerr << "Error occured: " << e.what() << endl;
-	}
-	catch (const out_of_range &e)
-	{
-		cerr << "Error occured: "<< e.what()<< endl;
-	}
-	catch (const underflow_error &e) {
-		cerr << "Error occured: " << e.what() << endl;
-	}
-	catch (const invalid_argument &e) {
-		cerr << "Error occured: " << e.what() << endl;
-	}
-	catch (...) {
-		cerr << "Unknown Error" << endl;
-	}
-	
-	
-
 
 #if windows == 1
 	system("pause");

@@ -12,7 +12,7 @@
 
 #define invalid_reading  -1000.0
 
-#include <vector>;
+#include <vector>
 
 #include <chrono>  // System time
 
@@ -77,21 +77,19 @@ protected:
 
 	//sampleCount method
 
-	int samples, totalSamples;
+	int samples, totalSamples, currentSecond;
+	float value;
 
 	//declaring temperature and humidity arrays
-	size_t size = 60;
+	vector <float> temperatureVector;
+	vector <float> humidityVector;
+
 
 
 	
 
 public:
 	
-	//vector <float> temperatureVector;
-	//vector <float> humidityVector;
-
-
-
 	// Constructors
 
 	Climate();
@@ -155,100 +153,100 @@ public:
 };
 
 
-vector <float> temperatureVector(60);
-vector <float> humidityVector(60);
+
 // Constructor
 
-Climate::Climate() {
+Climate::Climate(): temperatureVector(1), humidityVector(1) {
 
 	
 	//get app start time
-
+	temperatureVector.reserve(40);
 	StartTime = std::chrono::system_clock::now();
 	
-
-
 }
 
 
 
 void	Climate::clearSamples() {
 
-	temperatureVector.clear();
-	humidityVector.clear();
-	cout << "Samples cleared" << endl;
-	cout <<"Vector size: "<< temperatureVector.size()<< endl;
-	cout << "Vector capacity: " << temperatureVector.capacity();
-	if (temperatureVector.empty()) {
-		cout << " Vector empty" << endl;
-	}
-	else {
-		cout << " Vector not empty" << endl;
-	}
-
+	//temperatureVector.clear();
+	//humidityVector.clear();
+	//cout << "Samples cleared" << endl;
+	//temperatureVector.resize(5);
+	//humidityVector.resize(5);
+	
 
 }
 
 
 
 long	Climate::readSensor() {
-	//vector <float> temperatureVector(60);
-	//vector <float> humidityVector(60);
+	
+	
 
 	//get sensor read method launch time
 
-	system_clock::time_point EndTime = std::chrono::system_clock::now();
+	try {
+		sensorDevice.read_data();
+		cout << " Vector size: " << temperatureVector.size() << endl;
+		cout << " Capacity: " << temperatureVector.capacity() << endl;
 
-	sensorDevice.read_data();
+		system_clock::time_point EndTime = std::chrono::system_clock::now();
+		std::chrono::duration<double> Duration = EndTime - StartTime;;
+		currentSecond = (int)Duration.count();
 
-	//calculate time passed since launch of app
-
-	std::chrono::duration<double> Duration = EndTime - StartTime;;
-
-	int currentSecond = (int)Duration.count();
-
+		temperatureVector.push_back(sensorDevice.get_temperature_in_c());
+		humidityVector.push_back(sensorDevice.get_humidity());
 
 
-	//store sensor readings in vector
-	temperatureVector.push_back(sensorDevice.get_temperature_in_c());
-	humidityVector.push_back(sensorDevice.get_humidity());
-	
-	/*
-	if (currentSecond < 1) {
+		//cout << "Debugging information: " << "Temperature is " << temperatureVector[currentSecond] << "\nHumidity is : " << humidityVector[currentSecond] << "%" << endl;
 
-		throw underflow_error("Less than a 1 second from last sample");
+		//store sensor readings in vector
+		if (currentSecond < 1) {
 
-	}
+			throw underflow_error("Less than a 1 second from last sample");
 
-	if (currentSecond > maximum_readings) {
+		}
+		if (currentSecond > maximum_readings) {
 
-		throw out_of_range("Over 24 hout limit!");
+			throw out_of_range("Over 24 hout limit!");
 
-	}
-
-	if (sensorDevice.get_temperature_in_c() == NULL || sensorDevice.get_humidity() == NULL) {
-
-		throw runtime_error("Read attemt failure!");
-
-	}
-	*/
-
-	// This line is purely for your debugging and can be removes/commented out in the final code.
-
-		cout << endl << "Debugging information : " << "Temperature is " << sensorDevice.get_temperature_in_c() << " in degrees C " << sensorDevice.get_humidity() << "% humidity" << endl;
-
-		cout << " Element at index: " << currentSecond << " Temp: "<<temperatureVector[currentSecond]<<" Humidity: "<<humidityVector[currentSecond]<< endl;	
-		cout << "Size of vector: " << temperatureVector.size() << endl;
-
-		for (vector<float>::iterator it = temperatureVector.begin(); it != temperatureVector.end(); it++) {
-			cout << *it << endl;
 		}
 
-
 		
+		
+		if (sensorDevice.get_temperature_in_c() == invalid_reading || sensorDevice.get_humidity() == invalid_reading) {
 
+			throw runtime_error("Read attempt failure!");
+
+		}
+		
+		
+	}
+	catch (const runtime_error &e) {
+		cerr << "Error 1 occured: " << e.what() << endl;
+	}
+	catch (const out_of_range &e)
+	{
+		cerr << "Error 2 occured: " << e.what() << endl;
+	}
+	catch (const underflow_error &e) {
+		cerr << "Error 3 occured: " << e.what() << endl;
+	}
+	catch (const invalid_argument &e) {
+		cerr << "Error 4 occured: " << e.what() << endl;
+	}
+	catch (...) {
+		cerr << "Unknown 5 Error" << endl;
+	}
+	/*for (vector<float>::iterator it = temperatureVector.begin(); it != temperatureVector.end(); it++)
+	{
+		cout << " "<<*it<<" " << flush;
+	}*/
 	return currentSecond;
 
+
+	
 }
 
 
@@ -257,33 +255,35 @@ long	Climate::readSensor() {
 
 long Climate::sampleCount(long secs) {
 
+	try {
+		if (secs > maximum_readings || secs < 1) {
 
-
-	if (secs > maximum_readings || secs < 1) {
-
-		throw out_of_range("Out of range");
-
-	}
-
-	
-
-	for (int n = secs; n >= 1; n--) {
-
-		if (temperatureVector.at(n) != NULL) {
-
-			samples++;
+			throw out_of_range("Out of range");
 
 		}
 
-		if (humidityVector.at(n) != NULL) {
+		for (int n = secs; n >= 1; n--) {
 
-			samples++;
+			if (temperatureVector.at(n) != NULL) {
+
+				samples++;
+			}
+
+			if (humidityVector.at(n) != NULL) {
+
+				samples++;
+			}
 
 		}
+		
 
 	}
+	catch (const out_of_range &e)
+	{
+		cerr << "Error occured: " << e.what() << endl;
+	}
+
 	return samples;
-
 }
 
 
@@ -308,24 +308,35 @@ long Climate::sampleTotal() {
 
 double Climate::getHumidity(long sec) {
 
-	if (sec > maximum_readings || sec < 1) {
+	try {
 
-		throw out_of_range("Out of range");
+		if (sec > maximum_readings || sec < 1) {
+
+			throw out_of_range("Out of range");
+
+		}
+
+		value = humidityVector.at(sec);
+
+		if (value == invalid_reading) {
+
+			throw invalid_argument("No samples at specified time!");
+
+		}
+
+		
 
 	}
 
+	catch (const out_of_range &e)
+	{
+		cerr << "Error occured: " << e.what() << endl;
+	}
+	catch (const invalid_argument &e) {
+		cerr << "Error occured: " << e.what() << endl;
+	}
 	
-
-	float value = humidityVector.at(sec);
-
-	if (value == NULL) {
-
-		throw invalid_argument("No samples at specified time!");
-
-	}
-
 	return value;
-
 }
 
 
@@ -552,4 +563,4 @@ double Climate::minimumTemperature(long lookBack) {
 
 	return min;
 
-}
+} 
