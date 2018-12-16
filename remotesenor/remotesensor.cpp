@@ -34,9 +34,9 @@
 
 #include "climate.hpp"    // TODO: This is the assignment file for you to edit
 
-#define number_of_reads 50// TODO: Change this to specify how may times to read the sensor
+#define number_of_reads 5// TODO: Change this to specify how may times to read the sensor
 
-#define number_of_seconds 10
+#define number_of_seconds 5
 
 #if windows == 1
 using namespace System;  // Microsoft Specific
@@ -92,9 +92,9 @@ int main()
 
 
 	// TODO: Uncomment lines as you implement in climate.hpp
-
+	cout << "Total samples: " << roomB114.sampleTotal() << endl;
 		cout << "Number of samples taken in the last " << number_of_seconds << " seconds " << roomB114.sampleCount(number_of_seconds) << endl;
-		cout << "Average Humidity in the last " << number_of_seconds << " seconds " << roomB114.averageHumidity(number_of_seconds) << endl;
+		cout << "Average Humidity in the last " << number_of_seconds << " seconds " << roomB114.averageHumidity(-132123123) << endl;
 		cout << "Minimum Humidity in the last " << number_of_seconds << " seconds " << roomB114.minimumHumidity(number_of_seconds) << endl;
 		cout << "Maximum Humidity in the last " << number_of_seconds << " seconds " << roomB114.maximumHumidity(number_of_seconds) << endl;
 		cout << "Average Temperature in the last " << number_of_seconds << " seconds " << roomB114.averageTemperature(number_of_seconds) << endl;

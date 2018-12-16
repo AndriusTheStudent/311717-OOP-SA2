@@ -77,7 +77,7 @@ protected:
 
 	//sampleCount method
 
-	int samples, totalSamples, currentSecond;
+	int totalSamples, currentSecond;
 	float value;
 
 	//declaring temperature and humidity arrays
@@ -188,21 +188,15 @@ long	Climate::readSensor() {
 
 	try {
 		sensorDevice.read_data();
-		cout << " Vector size: " << temperatureVector.size() << endl;
-		cout << " Capacity: " << temperatureVector.capacity() << endl;
-
 		system_clock::time_point EndTime = std::chrono::system_clock::now();
 		std::chrono::duration<double> Duration = EndTime - StartTime;;
 		currentSecond = (int)Duration.count();
 
-		temperatureVector.push_back(sensorDevice.get_temperature_in_c());
-		humidityVector.push_back(sensorDevice.get_humidity());
-
-
-		//cout << "Debugging information: " << "Temperature is " << temperatureVector[currentSecond] << "\nHumidity is : " << humidityVector[currentSecond] << "%" << endl;
-
-		//store sensor readings in vector
 		if (currentSecond < 1) {
+
+			throw underflow_error("Less than a 1 second from last sample");
+
+		}if (currentSecond < 1) {
 
 			throw underflow_error("Less than a 1 second from last sample");
 
@@ -212,15 +206,13 @@ long	Climate::readSensor() {
 			throw out_of_range("Over 24 hout limit!");
 
 		}
-
-		
-		
 		if (sensorDevice.get_temperature_in_c() == invalid_reading || sensorDevice.get_humidity() == invalid_reading) {
 
 			throw runtime_error("Read attempt failure!");
-
 		}
-		
+
+		temperatureVector.push_back(sensorDevice.get_temperature_in_c());
+		humidityVector.push_back(sensorDevice.get_humidity());	
 		
 	}
 	catch (const runtime_error &e) {
@@ -239,10 +231,6 @@ long	Climate::readSensor() {
 	catch (...) {
 		cerr << "Unknown 5 Error" << endl;
 	}
-	/*for (vector<float>::iterator it = temperatureVector.begin(); it != temperatureVector.end(); it++)
-	{
-		cout << " "<<*it<<" " << flush;
-	}*/
 	return currentSecond;
 
 
@@ -254,6 +242,7 @@ long	Climate::readSensor() {
 	
 
 long Climate::sampleCount(long secs) {
+	long samples = 0;
 
 	try {
 		if (secs > maximum_readings || secs < 1) {
@@ -261,28 +250,22 @@ long Climate::sampleCount(long secs) {
 			throw out_of_range("Out of range");
 
 		}
-
-		for (int n = secs; n >= 1; n--) {
-
-			if (temperatureVector.at(n) != NULL) {
-
-				samples++;
-			}
-
-			if (humidityVector.at(n) != NULL) {
-
-				samples++;
-			}
-
-		}
-		
-
+		else {
+			for (int i = secs; i > 0; i--) {
+				if (temperatureVector.at(i) != NULL || temperatureVector.at(i) != invalid_reading) {
+					samples++;
+				}
+				if (humidityVector.at(i) != NULL || humidityVector.at(i) != invalid_reading) {
+					samples++;
+				}
+			}	
+		}	
 	}
 	catch (const out_of_range &e)
 	{
-		cerr << "Error occured: " << e.what() << endl;
+		cerr << "Error occured 6: " << e.what() << endl;
 	}
-
+	
 	return samples;
 }
 
@@ -294,13 +277,9 @@ long Climate::sampleCount(long secs) {
 
 long Climate::sampleTotal() {
 
-	for (auto it = temperatureVector.begin(); it != humidityVector.end(); ++it) {
-
-		totalSamples++;
-
-	}
-
-	return totalSamples;
+	long sampleTotal = (temperatureVector.size() + humidityVector.size()) -2;
+	
+	return sampleTotal;
 
 }
 
@@ -315,25 +294,23 @@ double Climate::getHumidity(long sec) {
 			throw out_of_range("Out of range");
 
 		}
-
-		value = humidityVector.at(sec);
-
 		if (value == invalid_reading) {
 
 			throw invalid_argument("No samples at specified time!");
 
 		}
-
+		else {
+			value = humidityVector.at(sec);
+		}
 		
-
 	}
 
 	catch (const out_of_range &e)
 	{
-		cerr << "Error occured: " << e.what() << endl;
+		cerr << "Error occured 7: " << e.what() << endl;
 	}
 	catch (const invalid_argument &e) {
-		cerr << "Error occured: " << e.what() << endl;
+		cerr << "Error occured 8: " << e.what() << endl;
 	}
 	
 	return value;
@@ -347,28 +324,34 @@ double Climate::averageHumidity(long lookBack) {
 
 	double sum = 0;
 
-	if (lookBack > maximum_readings || lookBack < 1) {
+	try {
 
-		throw out_of_range("Out of range");
+		if (lookBack > maximum_readings || lookBack < 1) {
 
-	}
-
-	for (int i = lookBack; i >= 1; i--) {
-
-		if (humidityVector[i] == NULL) {
-
-			throw invalid_argument("No samples at specified time!");
+			throw out_of_range("Out of range");
 
 		}
+		else {
 
-		sum += humidityVector[i];
+			for (int i = lookBack; i >= 1; i--) {
 
-	}
+				if (humidityVector[i] == NULL) {
 
-	avg = sum / lookBack;
+					throw invalid_argument("No samples at specified time!");
 
+				}
+
+				sum += humidityVector[i];
+
+			}
+			avg = sum / lookBack;
+		}
 	return avg;
-
+	}
+	catch (const out_of_range &e)
+	{
+		cerr << "Error occured 9: " << e.what() << endl;
+	}
 
 
 }
